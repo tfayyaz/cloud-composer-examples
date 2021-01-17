@@ -2,19 +2,27 @@
 
 ## Set the gcloud project
 
+```bash
 export PROJECT=<REPLACE-THIS-WITH-YOUR-PROJECT-ID>
 gcloud config set project $PROJECT
-
+```
+```bash
 gcloud config set project cloud-data-ml
+```
 
 ## Create BigQuery dataset
 
+```bash
 bq mk gcs_sensor_example
+```
 
 ## Create BigQuery Table
 
+```bash
 bq mk -t gcs_sensor_example.users user_id:string,country:string
+```
 
+```bash
 bq query --use_legacy_sql=false '
 CREATE TABLE mydataset.newtable
 (
@@ -31,34 +39,47 @@ OPTIONS(
   description="a table that expires in 2020, with each partition living for 24 hours",
   labels=[("org_unit", "development")]
 )'
+```
 
 ## Upload file to GCS
 
+```bash
 gsutil cp -L log users_* gs://cloud-data-ml-composer/gcs_sensor_to_bq/
+```
 
 ## Check files were uploaded
 
+```bash
 gsutil ls gs://cloud-data-ml-composer/gcs_sensor_to_bq/
+```
 
 ## Import file to BigQuery
 
+```bash
 bq load --source_format=NEWLINE_DELIMITED_JSON \
 gcs_sensor_example.users gs://cloud-data-ml-composer/gcs_sensor_to_bq/users_*
+```
 
 ## Check data is in the table
 
+```bash
 bq query --use_legacy_sql=false '
 SELECT * FROM `gcs_sensor_example.users`'
+```
 
 ## Delete BigQuery table
 
+```bash
 bq rm gcs_sensor_example.users
+```
 
 # Create BQ table and upload DAG
 
 ## Create BigQuery Table
 
+```bash
 bq mk -t gcs_sensor_example.users user_id:string,country:string
+```
 
 ## Create gcs sensor to BQ DAG
 
@@ -68,18 +89,26 @@ Create dag called gcs_sensor_to_bq.py
 
 ## Get compser env bucket 
 
+```bash
 gcloud composer environments list --locations europe-west1
+```
 
+```bash
 gcloud composer environments describe composer-4-nodes-2-cores --location europe-west1
+```
 
 ## Upload Plugin to GCS bucket
 
+```bash
 gsutil cp -r plugins/gcs_sensor_plugin/* gs://europe-west1-composer-4-nod-b2412042-bucket/plugins/gcs_sensor_plugin/
+```
 
 ## Upload DAG to GCS bucket
 
+
 gs://europe-west1-composer-4-nod-b2412042-bucket/dags
 
+```bash
 gsutil cp dags/gcs_sensor_to_bq.py gs://europe-west1-composer-4-nod-b2412042-bucket/dags
 gsutil cp dags/gcs_sensor_session_to_bq.py gs://europe-west1-composer-4-nod-b2412042-bucket/dags
 gsutil cp dags/gcs_sensor_session_to_bq_v1.0.py gs://europe-west1-composer-4-nod-b2412042-bucket/dags
@@ -89,9 +118,14 @@ gsutil cp dags/gcs_sensor_session_to_bq_v1.5.py gs://europe-west1-composer-4-nod
 gsutil cp dags/gcs_sensor_session_to_bq_v1.6.py gs://europe-west1-composer-4-nod-b2412042-bucket/dags
 
 gsutil cp dags/task_sensor_bq_job_v1.0.py gs://europe-west1-composer-4-nod-b2412042-bucket/dags
+```
 
+```bash
 gsutil ls gs://europe-west1-composer-4-nod-b2412042-bucket/plugins
+```
 
 ## Duplicate file for different dates
 
+```bash
 for i in {1..5}; do cp data/users_0001.json "data/users_20191106_000$i.json"; done
+```
